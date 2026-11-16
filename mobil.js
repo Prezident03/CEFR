@@ -131,6 +131,7 @@
     if (K() && !S) h += '<div class="m-card"><p class="m-note">' + (K().failed() ? "Server bilan bog'lanib bo'lmadi. Internetni tekshiring." : "Yuklanmoqda…") + "</p></div>";
     if (S) {
       var status = S.all ? "👑 Barcha mashqlar umrbod ochiq" : S.sec ? "🏅 " + { reading: "Reading", listening: "Listening", writing: "Writing", speaking: "Speaking" }[S.sec] + " bo'limi butunlay ochiq" : "";
+      if (S.admin) h += '<a class="m-admin-link" href="#/admin"><span>🛠</span><span><b>Admin panel</b><small>Foydalanuvchilar, statistika, kalit berish</small></span>' + ic("chev", "m-chev") + "</a>";
       if (status) h += '<div class="m-badge-line">' + status + "</div>";
       // referal
       h += '<section class="m-card m-ref"><div class="m-ref-top"><div><small>Referal kodingiz</small><b class="m-code">' + esc(S.code || "") + '</b></div><button class="m-icbtn" data-act="copycode" title="Nusxalash">' + ic("copy") + "</button></div>" +
@@ -181,6 +182,95 @@
   function paintProfile() {
     var a = document.getElementById("mRefs"); if (a) a.innerHTML = refsHTML();
     var b = document.getElementById("mTop"); if (b) b.innerHTML = topHTML();
+  }
+
+
+  /* ---------------- Admin ---------------- */
+  var AD = { stats: null, list: null, q: "", sort: "seen", open: null, busy: false, err: "" };
+  function ago(ts) {
+    if (!ts) return "hali kirmagan";
+    var s = (Date.now() - ts) / 1000;
+    return s < 90 ? "hozir" : s < 3600 ? Math.round(s / 60) + " daq oldin" : s < 86400 ? Math.round(s / 3600) + " soat oldin" : Math.round(s / 86400) + " kun oldin";
+  }
+  function adLoad(what) {
+    if (!K()) return;
+    if (what !== "users") K().call("/api/admin/stats").then(function (x) { AD.stats = x; adPaint(); }, function (e) { AD.err = e && e.code === "forbidden" ? "forbidden" : "err"; adPaint(); });
+    K().call("/api/admin/users", { q: AD.q, sort: AD.sort, limit: 60 }).then(function (x) { AD.list = x.list; adPaint(); }, function () { AD.err = "err"; adPaint(); });
+  }
+  function kpi(v, l, sub) { return '<div class="a-kpi"><b>' + v + "</b><small>" + l + "</small>" + (sub ? "<em>" + sub + "</em>" : "") + "</div>"; }
+  function chartHTML(days) {
+    var max = Math.max(1, Math.max.apply(null, days.map(function (d) { return Math.max(d.n, d.a); })));
+    return '<div class="a-chart">' + days.map(function (d) {
+      return '<div class="a-col" title="' + d.d + ": " + d.n + " yangi, " + d.a + ' faol"><div class="a-bars"><i class="a-a" style="height:' + (d.a / max * 100) + '%"></i><i class="a-n" style="height:' + (d.n / max * 100) + '%"></i></div><span>' + d.d.slice(3) + "</span></div>";
+    }).join("") + '</div><div class="a-leg"><span><i class="a-a"></i>Faol (kirgan)</span><span><i class="a-n"></i>Yangi qo\'shilgan</span></div>';
+  }
+  function userCard(u) {
+    var open = AD.open === u.id;
+    return '<li class="a-u' + (open ? " open" : "") + '" data-uid="' + u.id + '"><div class="a-uh" data-act="ad-open" data-id="' + u.id + '"><span class="m-av xs"><b>' + esc((u.name || "?").charAt(0).toUpperCase()) + '</b></span><span class="a-un"><b>' + esc(u.name) + (u.vip ? " 👑" : "") + "</b><small>" + (u.uname ? "@" + esc(u.uname) + " · " : "") + ago(u.seen) + '</small></span><span class="a-us"><b>🔑 ' + u.keys + "</b><small>✅ " + u.exs + " · 👥 " + u.refs + "</small></span></div>" +
+      (open ? '<div class="a-give"><div class="a-meta">ID: <code>' + u.id + "</code> · qo'shilgan: " + dt(u.created) + (u.ref_by ? " · taklif orqali" : "") + " · sarflagan: " + u.spent + ' 🔑</div>' +
+        '<div class="a-quick">' + [1, 3, 5, 10, 20].map(function (n) { return '<button class="m-btn" data-act="ad-q" data-n="' + n + '">+' + n + "</button>"; }).join("") + "</div>" +
+        '<div class="a-row"><input type="number" id="adN" placeholder="Miqdor (minus — olish)"><input id="adNote" placeholder="Izoh (ixtiyoriy)"></div>' +
+        '<div class="a-row"><button class="m-btn primary" data-act="ad-give" data-id="' + u.id + '">Kalit berish</button><button class="m-btn" data-act="ad-vip" data-id="' + u.id + '" data-v="' + (u.vip ? "0" : "1") + '">' + (u.vip ? "VIP'ni olish" : "👑 VIP qilish") + "</button></div><div id=\"adMsg\"></div></div>" : "") + "</li>";
+  }
+  function viewAdmin() {
+    var S = KS();
+    if (!S) return '<div class="m-page"><p class="m-note">Yuklanmoqda…</p></div>';
+    if (!S.admin || AD.err === "forbidden") return '<div class="m-page"><div class="m-card"><h3>⛔ Ruxsat yo\'q</h3><p class="m-note">Bu sahifa faqat admin uchun.</p></div></div>';
+    var st = AD.stats, k = st && st.k;
+    var h = '<div class="m-page m-adm"><header class="m-title"><h1>Admin panel</h1><button class="m-icbtn" data-act="ad-reload" title="Yangilash">↻</button></header>';
+    if (!k) h += '<p class="m-note">Statistika yuklanmoqda…</p>';
+    else {
+      h += '<div class="a-kpis">' + kpi(k.total, "Jami foydalanuvchi", "+" + k.newToday + " bugun") + kpi(k.activeToday, "Bugun faol", k.active7 + " · 7 kunda") +
+        kpi(k.workers, "Mashq bajarganlar", k.exs + " ta mashq") + kpi(k.invited, "Taklif orqali", Math.round(k.total ? k.invited / k.total * 100 : 0) + "%") +
+        kpi(k.keys, "Kalit (balans)", k.spent + " sarflangan") + kpi(k.vip, "VIP", k.unlocks + " ochilgan mashq") + "</div>";
+      h += '<section class="m-card"><h3>📈 So\'nggi 14 kun</h3>' + chartHTML(st.days) + "</section>";
+    }
+    h += '<section class="m-card"><h3>👥 Foydalanuvchilar</h3><div class="a-row"><input id="adQ" placeholder="Ism, @username yoki ID" value="' + esc(AD.q) + '"></div>' +
+      '<div class="m-seg a-sort">' + [["seen", "Faol"], ["new", "Yangi"], ["exs", "Mashq"], ["refs", "Taklif"]].map(function (x) { return '<button data-sort="' + x[0] + '" class="' + (AD.sort === x[0] ? "on" : "") + '">' + x[1] + "</button>"; }).join("") + "</div>" +
+      '<ul class="a-list" id="adList">' + listHTML() + "</ul></section></div>";
+    return h;
+  }
+  function listHTML() {
+    if (AD.list == null) return '<li class="m-note">Yuklanmoqda…</li>';
+    if (!AD.list.length) return '<li class="m-note">Hech kim topilmadi.</li>';
+    return AD.list.map(userCard).join("");
+  }
+  function adPaint() {
+    if (!/^#\/admin/.test(location.hash)) return;
+    var v = document.getElementById("view"), y = window.scrollY, focus = document.activeElement && document.activeElement.id === "adQ";
+    v.innerHTML = viewAdmin(); wireAdmin(v); window.scrollTo(0, y);
+    if (focus) { var q = document.getElementById("adQ"); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+  }
+  var qT = null;
+  function wireAdmin(v) {
+    var q = document.getElementById("adQ");
+    if (q) q.oninput = function () { AD.q = q.value; clearTimeout(qT); qT = setTimeout(function () { adLoad("users"); }, 350); };
+    v.querySelectorAll("[data-sort]").forEach(function (b) { b.onclick = function () { AD.sort = b.dataset.sort; AD.list = null; adPaint(); adLoad("users"); }; });
+    v.querySelectorAll("[data-act]").forEach(function (b) {
+      var a = b.dataset.act;
+      b.onclick = function () {
+        if (a === "ad-reload") { AD.stats = null; AD.list = null; adPaint(); adLoad(); }
+        if (a === "ad-open") { var id = +b.dataset.id; AD.open = AD.open === id ? null : id; adPaint(); }
+        if (a === "ad-q") { document.getElementById("adN").value = b.dataset.n; }
+        if (a === "ad-give" || a === "ad-vip") {
+          var body = { id: +b.dataset.id };
+          if (a === "ad-give") { body.n = +document.getElementById("adN").value || 0; body.note = document.getElementById("adNote").value; if (!body.n) { document.getElementById("adMsg").innerHTML = '<div class="wr-err">Miqdorni kiriting.</div>'; return; } }
+          else body.vip = b.dataset.v === "1";
+          var go = function (ok) {
+            if (!ok) return; b.disabled = true;
+            K().call("/api/admin/give", body).then(function (x) {
+              AD.list = AD.list.map(function (u) { return u.id === x.user.id ? x.user : u; });
+              K().toast(a === "ad-vip" ? (body.vip ? "👑 VIP berildi" : "VIP olindi") : "✅ " + esc(x.user.name) + ": " + (body.n > 0 ? "+" : "") + body.n + " 🔑 (endi " + x.user.keys + ")");
+              if (x.user.id === (KS() || {}).id) K().load();
+              adPaint(); adLoad("stats-only");
+            }, function () { b.disabled = false; document.getElementById("adMsg").innerHTML = '<div class="wr-err">Xatolik. Qayta urinib ko\'ring.</div>'; });
+          };
+          var u = AD.list.filter(function (x) { return x.id === body.id; })[0] || {};
+          var txt = a === "ad-vip" ? (body.vip ? u.name + " ga VIP berilsinmi?" : u.name + " dan VIP olinsinmi?") : u.name + " ga " + body.n + " 🔑 berilsinmi?";
+          try { W.showConfirm(txt, go); } catch (e) { go(window.confirm(txt)); }
+        }
+      };
+    });
   }
 
   /* ---------------- mavzu ---------------- */
@@ -245,7 +335,7 @@
     if (p === "mashq" || p === "reading" || p === "listening" || p === "writing" || p === "speaking") return 1;
     if (p === "reja") return 2;
     if (p === "stats") return 3;
-    if (p === "profil" || p === "kalit") return 4;
+    if (p === "profil" || p === "kalit" || p === "admin") return 4;
     return 0;
   }
   function nav() {
@@ -269,6 +359,7 @@
     if (p === "") { view.innerHTML = viewHome(); wire(view); return true; }
     if (p === "mashq") { view.innerHTML = viewMashq(); return true; }
     if (p === "profil") { view.innerHTML = viewProfil(); wire(view); loadRefs(); return true; }
+    if (p === "admin") { view.innerHTML = viewAdmin(); wireAdmin(view); if (KS() && KS().admin) adLoad(); return true; }
     return false;
   }
   document.addEventListener("DOMContentLoaded", function () {
@@ -276,6 +367,7 @@
     if (K()) K().onChange(function () {
       var h = location.hash.replace(/^#\/?/, "");
       if (h === "" || h === "profil") { var y = window.scrollY; render(); window.scrollTo(0, y); }
+      if (h === "admin" && !AD.stats && !AD.list) render();
     });
   });
   window.CEFR_MOBILE = { route: route };

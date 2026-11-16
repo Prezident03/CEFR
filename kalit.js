@@ -227,7 +227,7 @@
       T.attempt = function (part, n, score, total) {
         var r = orig.apply(this, arguments);
         var pct = total ? Math.round(score / total * 100) : 0;
-        if (S && (!S.active || pct >= 90)) call("/api/event", { pct: pct }).then(function (x) { setS(x); if (x.got) toast("⭐ A'lo natija: <b>+" + x.got + " 🔑</b>"); }, function () {});
+        if (S) call("/api/event", { pct: pct }).then(function (x) { setS(x); if (x.got) toast("⭐ A'lo natija: <b>+" + x.got + " 🔑</b>"); }, function () {});
         return r;
       };
       T._kq = true;
