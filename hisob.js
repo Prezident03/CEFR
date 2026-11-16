@@ -17,11 +17,20 @@
     l3: { name: "Gapiruvchini fikrga moslash (tinglab)", part: "l3" },
     l4: { name: "Xaritada joyni belgilash (tinglab)", part: "l4" },
     l5: { name: "Parchalar bo'yicha test (tinglab)", part: "l5" },
-    l6: { name: "Ma'ruzadan bo'shliq to'ldirish (tinglab)", part: "l6" }
+    l6: { name: "Ma'ruzadan bo'shliq to'ldirish (tinglab)", part: "l6" },
+    w1: { name: "Xat yozish nazariyasi (testlar)", part: "w1" },
+    w2: { name: "Insho yozish nazariyasi (testlar)", part: "w2" },
+    wt: { name: "Xat va insho yozish (AI bahosi)", part: "wt" },
+    wx: { name: "Writing imtihon varianti (60 daq)", part: "wx" },
+    s1: { name: "Shaxsiy savollarga javob (gapirish)", part: "s1" },
+    s2: { name: "Rasmlarni solishtirish (gapirish)", part: "s2" },
+    s3: { name: "Rasm bo'yicha hikoya (gapirish)", part: "s3" },
+    s4: { name: "Munozara FOR/AGAINST (gapirish)", part: "s4" },
+    sx: { name: "Speaking mock imtihon", part: "sx" }
   };
-  function sec(part) { return part.charAt(0) === "l" ? "listening" : "reading"; }
+  function sec(part) { var c = part.charAt(0); return c === "l" ? "listening" : c === "w" ? "writing" : c === "s" ? "speaking" : "reading"; }
   function base(part) { return "#/" + sec(part) + "/" + part; }
-  var PART_NAMES = { p1: "Reading 1", p2: "Reading 2", p3: "Reading 3", p4: "Reading 4", p5: "Reading 5", l1: "Listening 1", l2: "Listening 2", l3: "Listening 3", l4: "Listening 4", l5: "Listening 5", l6: "Listening 6", o: "Boshqa sahifalar" };
+  var PART_NAMES = { p1: "Reading 1", p2: "Reading 2", p3: "Reading 3", p4: "Reading 4", p5: "Reading 5", l1: "Listening 1", l2: "Listening 2", l3: "Listening 3", l4: "Listening 4", l5: "Listening 5", l6: "Listening 6", w1: "Writing Task 1", w2: "Writing Task 2", wt: "Writing · Yozish", wx: "Writing · Variantlar", s1: "Speaking 1.1", s2: "Speaking 1.2", s3: "Speaking 2", s4: "Speaking 3", sx: "Speaking · Mock", o: "Boshqa sahifalar" };
   var WD = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
   var MONTHS = ["yan", "fev", "mar", "apr", "may", "iyn", "iyl", "avg", "sen", "okt", "noy", "dek"];
 

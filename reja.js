@@ -4,11 +4,11 @@
 (function () {
   "use strict";
 
-  var EST = { p1: 8, p2: 10, p3: 12, p4: 15, p5: 20, l1: 8, l2: 9, l3: 9, l4: 8, l5: 12, l6: 10 };   // taxminiy daqiqa
+  var EST = { p1: 8, p2: 10, p3: 12, p4: 15, p5: 20, l1: 8, l2: 9, l3: 9, l4: 8, l5: 12, l6: 10, w1: 15, w2: 15, wt: 25, wx: 60, s1: 5, s2: 5, s3: 6, s4: 6, sx: 18 };   // taxminiy daqiqa
   var NAMES = { p1: "Reading 1", p2: "Reading 2", p3: "Reading 3", p4: "Reading 4", p5: "Reading 5",
-    l1: "Listening 1", l2: "Listening 2", l3: "Listening 3", l4: "Listening 4", l5: "Listening 5", l6: "Listening 6" };
+    l1: "Listening 1", l2: "Listening 2", l3: "Listening 3", l4: "Listening 4", l5: "Listening 5", l6: "Listening 6", w1: "Writing T1", w2: "Writing T2", wt: "Writing", wx: "Writing variant", s1: "Speaking 1.1", s2: "Speaking 1.2", s3: "Speaking 2", s4: "Speaking 3", sx: "Speaking mock" };
   var SKILL_OF = { p1: "Bo'shliqqa so'z", p2: "E'lonlarni moslash", p3: "Sarlavha tanlash", p4: "Test + T/F/NG", p5: "C1 matn",
-    l1: "Qisqa dialoglar", l2: "Monolog: bo'shliq", l3: "Gapiruvchilarni moslash", l4: "Xarita", l5: "Parchalar bo'yicha test", l6: "Ma'ruza: bo'shliq" };
+    l1: "Qisqa dialoglar", l2: "Monolog: bo'shliq", l3: "Gapiruvchilarni moslash", l4: "Xarita", l5: "Parchalar bo'yicha test", l6: "Ma'ruza: bo'shliq", w1: "Xat nazariyasi", w2: "Insho nazariyasi", wt: "Xat / insho yozish", wx: "To'liq imtihon (60 daq)", s1: "Shaxsiy savollar", s2: "Rasmlarni solishtirish", s3: "Rasm bo'yicha hikoya", s4: "Munozara (FOR/AGAINST)", sx: "To'liq speaking imtihoni" };
   var MINS = [30, 45, 60, 90, 120];
   var MONTHS = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"];
   var MON_S = ["yan", "fev", "mar", "apr", "may", "iyn", "iyl", "avg", "sen", "okt", "noy", "dek"];
@@ -22,7 +22,7 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
-  function sec(part) { return part.charAt(0) === "l" ? "listening" : "reading"; }
+  function sec(part) { var c = part.charAt(0); return c === "l" ? "listening" : c === "w" ? "writing" : c === "s" ? "speaking" : "reading"; }
   function pkey(part, n) { return sec(part) + "." + part + "." + n; }
   function href(part, n) { return "#/" + sec(part) + "/" + part + "/" + n; }
   function dkey(d) { return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
@@ -212,7 +212,7 @@
       var title = snapT[x.part + "." + x.n] || ("Exercise " + x.n);
       return '<a class="pl-task' + (s.done ? " done" : "") + '" href="' + href(x.part, x.n) + '">' +
         '<span class="pl-tick">' + (s.done ? "✓" : i + 1) + "</span>" +
-        '<span class="pl-tx"><b>' + esc(NAMES[x.part]) + " · " + (/^(Exercise|Mashq) /.test(title) ? esc(title) : "Exercise " + x.n + " <small>" + esc(title) + "</small>") + "</b>" +
+        '<span class="pl-tx"><b>' + esc(NAMES[x.part]) + " · " + (/^(Exercise|Mashq|Unit) /.test(title) ? esc(title) : "Exercise " + x.n + " <small>" + esc(title) + "</small>") + "</b>" +
         "<small>" + esc(SKILL_OF[x.part]) + " · ~" + EST[x.part] + " daq" + (x.redo ? " · <i>xatolar ustida qayta ishlash</i>" : "") +
         (s.done && s.total ? " · natija " + s.score + "/" + s.total : "") + "</small></span>" +
         '<span class="pl-go">' + (s.done ? "Bajarildi" : "Boshlash →") + "</span></a>";

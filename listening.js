@@ -473,10 +473,15 @@
   function vals2() {
     return Array.prototype.map.call(document.querySelectorAll(".g2in"), function (x) { return x.value.trim(); });
   }
+  function hlRe(hl, text) { // avval butun so'z sifatida, topilmasa — so'z ichidan
+    var q = hl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), re = null;
+    try { re = new RegExp("(?<![A-Za-z0-9])(" + q + ")(?![A-Za-z0-9])", "i"); } catch (e) {}
+    return re && re.test(text) ? re : new RegExp("(" + q + ")", "i");
+  }
   function markEv(it) {
     var ev = esc(it.ev || "");
     if (it.hl) {
-      var re = new RegExp("(" + it.hl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "i");
+      var re = hlRe(it.hl, ev);
       ev = ev.replace(re, "<mark>$1</mark>");
     }
     return ev;
@@ -548,7 +553,7 @@
         (bySeg[si] || []).forEach(function (gi) {
           var it = e.items[gi];
           if (!it.hl) return;
-          var re = new RegExp("(" + it.hl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "i");
+          var re = hlRe(it.hl, t);
           t = t.replace(re, '<mark title="' + (gi + 1) + (part === "l5" ? "-savol" : "-bo\'shliq") + '">$1<sup>' + (gi + 1) + "</sup></mark>");
         });
         return '<p class="tx-seg" data-s="' + sg.s + '" data-e="' + sg.e + '"><button type="button" class="tx-time" data-s="' + sg.s + '">' + fmt(sg.s) + "</button>" +

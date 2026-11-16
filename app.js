@@ -7,8 +7,8 @@
   var SECTIONS = [
     { id: "reading",   name: "Reading",   desc: "Matnlar, testlar, savollar", badge: "R", active: true },
     { id: "listening", name: "Listening", desc: "Audio, testlar, transkript", badge: "L", active: !!window.CEFR_LISTEN },
-    { id: "writing",   name: "Writing",   desc: "Task 1, Task 2, essaylar",   badge: "W", active: false },
-    { id: "speaking",  name: "Speaking",  desc: "Part 1, Part 2, Part 3",     badge: "S", active: false }
+    { id: "writing",   name: "Writing",   desc: "Xatlar, insholar, AI tekshiruvi", badge: "W", active: !!(window.CEFR_WRITE && window.CEFR_WRITE.total()) },
+    { id: "speaking",  name: "Speaking",  desc: "Mock imtihon, ovozli javob, AI tahlili", badge: "S", active: !!(window.CEFR_SPEAK && window.CEFR_SPEAK.total()) }
   ];
 
   var PARTS = [
@@ -199,6 +199,14 @@
         var ld = window.CEFR_LISTEN.doneCount(), lt = window.CEFR_LISTEN.total();
         stat = '<div class="bar"><span style="width:' + (lt ? Math.round(ld / lt * 100) : 0) + '%"></span></div>' +
                '<div class="go">' + ld + " / " + lt + " mashq bajarilgan · Ochish →</div>";
+      } else if (s.id === "writing" && s.active) {
+        var wd = window.CEFR_WRITE.doneCount(), wt = window.CEFR_WRITE.total();
+        stat = '<div class="bar"><span style="width:' + (wt ? Math.round(wd / wt * 100) : 0) + '%"></span></div>' +
+               '<div class="go">' + wd + " / " + wt + " mavzu va topshiriq · Ochish →</div>";
+      } else if (s.id === "speaking" && s.active) {
+        var sd = window.CEFR_SPEAK.doneCount(), sn = window.CEFR_SPEAK.total();
+        stat = '<div class="bar"><span style="width:' + (sn ? Math.round(sd / sn * 100) : 0) + '%"></span></div>' +
+               '<div class="go">' + sd + " / " + sn + " mashq bajarilgan · Ochish →</div>";
       } else {
         stat = '<div class="go" style="color:var(--text3)">Tez orada</div>';
       }
@@ -1526,6 +1534,10 @@
       window.CEFR_PLAN.render(view);
     } else if (parts[0] === "stats" && window.CEFR_STATS) {
       window.CEFR_STATS.render(view);
+    } else if (parts[0] === "speaking" && window.CEFR_SPEAK) {
+      window.CEFR_SPEAK.render(parts, view);
+    } else if (parts[0] === "writing" && window.CEFR_WRITE) {
+      window.CEFR_WRITE.render(parts, view);
     } else if (parts[0] === "listening" && window.CEFR_LISTEN) {
       window.CEFR_LISTEN.render(parts, view);
     } else if (parts.length === 0) {
@@ -1702,7 +1714,7 @@
         { id: "p3", name: "Part 3", desc: PARTS[2].desc, list: mk(p3Items, p3key, function (it) { return it.title || ("Mashq " + it.n); }) },
         { id: "p4", name: "Part 4", desc: PARTS[3].desc, list: mk(p4Items, p4key, function (it) { return it.title || ("Mashq " + it.n); }) },
         { id: "p5", name: "Part 5", desc: PARTS[4].desc, list: mk(p5Items, p5key, function (it) { return it.title || ("Mashq " + it.n); }) }
-      ].concat(window.CEFR_LISTEN ? window.CEFR_LISTEN.catalog() : []);
+      ].concat(window.CEFR_LISTEN ? window.CEFR_LISTEN.catalog() : []).concat(window.CEFR_WRITE ? window.CEFR_WRITE.catalog() : []).concat(window.CEFR_SPEAK ? window.CEFR_SPEAK.catalog() : []);
     }
   };
   (function initTheme() {
