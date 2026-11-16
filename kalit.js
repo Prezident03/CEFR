@@ -11,7 +11,8 @@
   try { S = JSON.parse(localStorage.getItem(LS)); } catch (e) {}
 
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
-  function setS(x) { if (!x || x.error) return; S = x; err = false; try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {} var b = document.getElementById("kqN"); if (b) b.textContent = S.keys; }
+  var subs = [];
+  function setS(x) { if (!x || x.error) return; S = x; err = false; try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {} document.querySelectorAll(".kqN, #kqN").forEach(function (b) { b.textContent = S.keys; }); subs.forEach(function (f) { try { f(S); } catch (e) {} }); }
   function call(path, body) {
     var ctl = window.AbortController ? new AbortController() : null;
     var t = setTimeout(function () { if (ctl) ctl.abort(); }, 12000);
@@ -78,6 +79,7 @@
 
   var pendingGate = false;
   function gate(parts, view) {
+    if (parts[0] === "kalit" && window.CEFR_MOBILE) { location.replace("#/profil"); return true; }
     if (parts[0] === "kalit") { view.innerHTML = pageHTML(); wirePage(view); if (!topData) loadTop(view); return true; }
     var it = itemOf(parts);
     if (!it || isOpen(it)) return false;
@@ -206,7 +208,7 @@
       el.classList.toggle("kq-locked", !!(it && !isOpen(it)));
     });
     var h = location.hash.replace(/^#\/?/, "");
-    if (!h && S && !view.querySelector(".kq-home")) {
+    if (!h && S && !window.CEFR_MOBILE && !view.querySelector(".kq-home")) {
       var cards = view.querySelector(".cards");
       if (cards) {
         var d = document.createElement("div"); d.className = "kq-home"; d.onclick = function () { location.hash = "#/kalit"; };
@@ -235,6 +237,11 @@
 
   window.CEFR_KEY = {
     gate: gate,
+    state: function () { return S; },
+    failed: function () { return err; },
+    call: call, setS: setS, share: share, toast: toast, load: load,
+    onChange: function (f) { subs.push(f); },
+    free: FREE,
     badge: function () { return '<button class="icon-btn kq-badge" onclick="location.hash=\'#/kalit\'" title="Kalitlar">🔑 <b id="kqN">' + (S ? S.keys : "…") + "</b></button>"; }
   };
 })();

@@ -1530,6 +1530,7 @@
     var auth = window.CEFR_AUTH;
     if (auth && !auth.isReady()) { view.innerHTML = auth.loadingHTML(); return; }
     if (auth && !auth.current()) { auth.renderLogin(view); window.scrollTo(0, 0); return; }
+    if (window.CEFR_MOBILE && window.CEFR_MOBILE.route(parts, view)) { window.scrollTo(0, 0); return; }
     if (window.CEFR_KEY && window.CEFR_KEY.gate(parts, view)) { window.scrollTo(0, 0); return; }
 
     if (parts[0] === "reja" && window.CEFR_PLAN) {

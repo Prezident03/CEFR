@@ -31,7 +31,11 @@
   function parent(h) {
     var p = h.replace(/^#\/?/, "").split("/").filter(Boolean);
     if (!p.length) return null;
-    if (p[0] === "stats" || p[0] === "reja") return "#/";
+    var mob = document.documentElement.classList.contains("mob");
+    if (p.length === 1 && /^(stats|reja|mashq|profil)$/.test(p[0])) return mob ? null : "#/";
+    if (p[0] === "kalit") return mob ? "#/profil" : "#/";
+    if (p.length === 1 && /^(reading|listening|writing|speaking)$/.test(p[0])) return mob ? "#/mashq" : "#/";
+    if (p[0] === "speaking" && p[1] === "x") return "#/speaking/" + (!p[3] || p[3] === "all" ? "m" : p[3]);
     p.pop();
     if (p.length === 1 && (p[0] === "reading" || p[0] === "listening")) return "#/" + p[0];
     return p.length ? "#/" + p.join("/") : "#/";
