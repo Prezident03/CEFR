@@ -321,6 +321,7 @@
   }
   window.CEFR_SPEAK = {
     render: render,
+    stop: function () { stopRun(); run = null; },
     total: function () { return M.length * 5; },
     doneCount: function () { var d = 0; M.forEach(function (m) { ["s1", "s2", "s3", "s4", "sx"].forEach(function (p) { var g = prog(p, m.n0); if (g && g.done) d++; }); }); return d; },
     catalog: function () {

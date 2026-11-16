@@ -162,6 +162,7 @@
         (window.CEFR_AUTH && window.CEFR_AUTH.current() && window.CEFR_PLAN ? '<button class="icon-btn stats-btn" id="planBtn" title="Imtihon rejasi"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M9 3v4M15 3v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Reja</span></button>' : "") +
         '<button class="icon-btn" id="trBtn" aria-pressed="' + (window.CEFR_TR && CEFR_TR.isOn() ? "true" : "false") + '" title="Matndagi so\'zni bossangiz tarjimasi chiqadi">Tarjima: ' + (window.CEFR_TR && CEFR_TR.isOn() ? "yoqiq" : "o\'chiq") + "</button>" +
         '<button class="icon-btn" id="nightBtn">' + (night ? "Kunduzgi" : "Tungi") + " rejim</button>" +
+        (window.CEFR_KEY ? window.CEFR_KEY.badge() : "") +
         (window.CEFR_AUTH ? window.CEFR_AUTH.chipHTML() : "") +
       "</div>";
     var sb = document.getElementById("statsBtn");
@@ -1529,6 +1530,7 @@
     var auth = window.CEFR_AUTH;
     if (auth && !auth.isReady()) { view.innerHTML = auth.loadingHTML(); return; }
     if (auth && !auth.current()) { auth.renderLogin(view); window.scrollTo(0, 0); return; }
+    if (window.CEFR_KEY && window.CEFR_KEY.gate(parts, view)) { window.scrollTo(0, 0); return; }
 
     if (parts[0] === "reja" && window.CEFR_PLAN) {
       window.CEFR_PLAN.render(view);
