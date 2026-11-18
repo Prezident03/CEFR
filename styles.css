@@ -1238,3 +1238,31 @@ html.mob .m-plan .pl-home .pl-ht{text-align:left}
 .a-quick{display:flex;gap:6px;flex-wrap:wrap}
 .a-quick .m-btn{padding:7px 12px;font-size:.85rem}
 .a-u.open{background:color-mix(in srgb,var(--accent-soft) 45%,transparent);margin:0 -16px;padding:0 16px;border-radius:12px}
+/* ---------- to'liq ekran va keng ekran (kompyuter) ---------- */
+html.mob body{padding-top:calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px))}
+.m-hr{display:flex;align-items:center;gap:8px}
+.m-fs{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font:inherit;font-weight:700;cursor:pointer}
+.m-fs .mi{width:20px;height:20px}
+.m-fs.ic{width:42px;height:42px;border-radius:50%;box-shadow:var(--shadow);padding:0}
+.m-fs.ic span{display:none}
+.m-fs.set{border-radius:12px;padding:8px 12px;font-size:.85rem;flex:none}
+.m-fs:hover{color:var(--accent);border-color:var(--accent)}
+.m-brand,.m-fs.nav{display:none}
+@media (min-width:880px){
+  html.mob{--side:232px}
+  html.mob .m-nav{top:0;right:auto;width:var(--side);height:auto;display:flex;flex-direction:column;align-items:stretch;gap:4px;
+    padding:calc(18px + var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px)) 14px 18px;border-top:0;border-right:1px solid var(--border)}
+  html.mob .m-brand{display:flex;align-items:center;gap:10px;padding:6px 10px 18px;font-size:1.05rem}
+  html.mob .m-nav a{flex-direction:row;justify-content:flex-start;gap:12px;padding:12px 14px;border-radius:14px;font-size:.95rem;flex:none}
+  html.mob .m-nav a:hover{background:var(--surface2)}
+  html.mob .m-nav a.on{background:var(--accent-soft)}
+  html.mob .m-nav a.on::before{top:12px;bottom:12px;left:0;width:3px;height:auto;border-radius:0 3px 3px 0}
+  html.mob .m-fs.nav{display:flex;margin-top:auto;justify-content:flex-start;gap:12px;padding:12px 14px;border-radius:14px;font-size:.92rem}
+  html.mob #view{margin-left:var(--side);padding-bottom:32px}
+  html.mob .m-page{max-width:1000px;padding:24px 28px}
+  html.mob .m-tiles{grid-template-columns:repeat(4,1fr)}
+  html.mob .m-home .m-hero{padding:26px 30px}
+  html.mob .kq-toast,html.mob .tr-sheet{bottom:24px}
+  html.mob .ex-layout{height:calc(100vh - var(--tg-safe-area-inset-top,0px) - var(--tg-content-safe-area-inset-top,0px))}
+  html.mob .m-adm .a-kpis{grid-template-columns:repeat(3,1fr)}
+}

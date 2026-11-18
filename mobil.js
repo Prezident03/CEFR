@@ -27,7 +27,9 @@
     share: '<path d="M12 15V3M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>',
     copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
     play: '<path d="M8 5v14l11-7z"/>',
-    chev: '<path d="M9 6l6 6-6 6"/>'
+    chev: '<path d="M9 6l6 6-6 6"/>',
+    full: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+    exit: '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>'
   };
   function ic(n, cls) { return '<svg class="mi ' + (cls || "") + '" viewBox="0 0 24 24" aria-hidden="true">' + ICON[n] + "</svg>"; }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -86,7 +88,7 @@
     var S = KS();
     var invite = K() ? '<div class="m-invite"><div><b>Do\'stlaringizni taklif qiling</b><small>Har bir do\'st uchun <b>+3 🔑</b>, u ham <b>+2 🔑</b> oladi</small></div><button class="m-btn light" data-act="share">' + ic("share") + "Ulashish</button></div>" : "";
     return '<div class="m-page m-home">' +
-      '<header class="m-head"><a class="m-hi" href="#/profil">' + avatar("sm") + "<span><small>" + hello() + ",</small><b>" + esc(firstName()) + "</b></span></a>" + keyPill() + "</header>" +
+      '<header class="m-head"><a class="m-hi" href="#/profil">' + avatar("sm") + "<span><small>" + hello() + ",</small><b>" + esc(firstName()) + "</b></span></a><span class=\"m-hr\">" + (DESKTOP ? fsBtn("ic") : "") + keyPill() + "</span></header>" +
       '<section class="m-hero"><div class="m-hero-l"><div class="m-streak"><span>🔥</span><b>' + (st.streak || 0) + "</b><small>kun<br>ketma-ket</small></div>" +
       '<div class="m-hstats"><span><b>' + mins(st.today) + "</b><small>bugun</small></span><span><b>" + (st.acc != null ? st.acc + "%" : "—") + "</b><small>o'rtacha</small></span></div></div>" +
       '<div class="m-hero-r">' + ring(pct, 92) + '<span class="m-ring-t"><b>' + pct + "%</b><small>" + st.done + "/" + st.totalEx + "</small></span></div></section>" +
@@ -161,6 +163,7 @@
     var tr = window.CEFR_TR && window.CEFR_TR.isOn(), mode = themeMode();
     h += '<section class="m-card"><h3>⚙️ Sozlamalar</h3>' +
       '<label class="m-set"><span><b>Bosganda tarjima</b><small>Matndagi so\'z yoki gapni bossangiz, o\'zbekcha tarjimasi chiqadi</small></span><input type="checkbox" class="m-sw" data-act="tr"' + (tr ? " checked" : "") + "></label>" +
+      (fsOK() ? '<div class="m-set"><span><b>To\'liq ekran</b><small>Kompyuterda ilovani butun ekranga yoyish</small></span>' + fsBtn("set") + "</div>" : "") +
       '<div class="m-set"><span><b>Mavzu</b><small>Ilova ranglari</small></span></div><div class="m-seg">' +
       [["auto", "Avto"], ["light", "Yorug'"], ["dark", "Qorong'i"]].map(function (x) { return '<button data-theme="' + x[0] + '" class="' + (mode === x[0] ? "on" : "") + '">' + x[1] + "</button>"; }).join("") + "</div></section>" +
       '<p class="m-foot">CEFR Companion · Multilevel tayyorgarlik</p></div>';
@@ -327,6 +330,32 @@
   }
   function render() { if (window.CEFR_APP) window.CEFR_APP.render(); }
 
+  /* ---------------- to'liq ekran (kompyuterda) ---------------- */
+  var DESKTOP = !!(W && /^(tdesktop|macos|web|weba|webk|unigram)$/.test(W.platform || ""));
+  function fsOK() { return !!(W && typeof W.requestFullscreen === "function" && (!W.isVersionAtLeast || W.isVersionAtLeast("8.0"))); }
+  function isFS() { return !!(W && W.isFullscreen); }
+  function toggleFS() {
+    if (!fsOK()) { if (K()) K().toast("To'liq ekran uchun Telegram'ni yangilang"); return; }
+    try { isFS() ? W.exitFullscreen() : W.requestFullscreen(); } catch (e) {}
+  }
+  function fsBtn(cls) {
+    if (!fsOK()) return "";
+    return '<button class="m-fs ' + (cls || "") + '" data-fs title="' + (isFS() ? "Kichraytirish" : "To'liq ekran") + '">' + ic(isFS() ? "exit" : "full") + "<span>" + (isFS() ? "Kichraytirish" : "To'liq ekran") + "</span></button>";
+  }
+  function paintFS() {
+    document.querySelectorAll("[data-fs]").forEach(function (b) {
+      b.innerHTML = ic(isFS() ? "exit" : "full") + "<span>" + (isFS() ? "Kichraytirish" : "To'liq ekran") + "</span>";
+      b.title = isFS() ? "Kichraytirish" : "To'liq ekran";
+    });
+    document.documentElement.classList.toggle("tg-fs", isFS());
+  }
+  document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-fs]"); if (b) { e.preventDefault(); toggleFS(); } });
+  if (W && W.onEvent) {
+    try { W.onEvent("fullscreenChanged", paintFS); } catch (e) {}
+    try { W.onEvent("fullscreenFailed", function (x) { if (K()) K().toast(x && x.error === "UNSUPPORTED" ? "Bu qurilmada to'liq ekran ishlamaydi" : "To'liq ekranni yoqib bo'lmadi"); }); } catch (e) {}
+  }
+  if (DESKTOP) document.documentElement.classList.add("tg-desk");
+
   /* ---------------- pastki menyu ---------------- */
   var TABS = [["home", "#/", "Asosiy"], ["grid", "#/mashq", "Mashqlar"], ["cal", "#/reja", "Reja"], ["chart", "#/stats", "Natijalar"], ["user", "#/profil", "Profil"]];
   function tabOf(h) {
@@ -342,7 +371,7 @@
     var n = document.getElementById("mNav");
     if (!n) {
       n = document.createElement("nav"); n.id = "mNav"; n.className = "m-nav";
-      n.innerHTML = TABS.map(function (t, i) { return '<a href="' + t[1] + '" data-i="' + i + '">' + ic(t[0]) + "<span>" + t[2] + "</span></a>"; }).join("");
+      n.innerHTML = '<div class="m-brand">' + avatar("xs") + "<b>CEFR Companion</b></div>" + TABS.map(function (t, i) { return '<a href="' + t[1] + '" data-i="' + i + '">' + ic(t[0]) + "<span>" + t[2] + "</span></a>"; }).join("") + (DESKTOP ? fsBtn("nav") : "");
       document.body.appendChild(n);
       n.addEventListener("click", function () { try { W.HapticFeedback && W.HapticFeedback.selectionChanged(); } catch (e) {} });
     }
