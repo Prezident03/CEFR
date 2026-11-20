@@ -52,8 +52,9 @@
   function aiReady(cb) {
     if (ai.tried) { cb(ai.ok); return; }
     var c = window.claude;
-    if (!c || typeof c.use !== "function") { ai.tried = true; cb(false); return; }
-    c.use("sample").then(function (ns) { ai.tried = true; ai.ns = ns; ai.ok = !!ns; cb(ai.ok); }, function () { ai.tried = true; cb(false); });
+    function server() { var K = window.CEFR_KEY, S = K && K.state && K.state(); ai.tried = true; ai.server = !!(K && (!S || S.ai !== false)); ai.ok = ai.server; cb(ai.ok); }
+    if (!c || typeof c.use !== "function") { server(); return; }
+    c.use("sample").then(function (ns) { if (!ns) { server(); return; } ai.tried = true; ai.ns = ns; ai.ok = true; cb(true); }, function () { server(); });
   }
   function parseJSON(t) {
     if (t && typeof t === "object") return t;
@@ -62,7 +63,13 @@
     if (a < 0 || b < a) throw new Error("bad");
     return JSON.parse(t.slice(a, b + 1));
   }
-  function aiAsk(prompt) {
+  function aiAsk(prompt, kind) {
+    if (ai.server) {
+      return window.CEFR_KEY.call("/api/ai/ask", { prompt: prompt, kind: kind || "writing" }).then(function (x) {
+        if (x.keys != null && window.CEFR_KEY.state()) { var S = window.CEFR_KEY.state(); S.keys = x.keys; S.aiFree = x.aiFree; window.CEFR_KEY.setS(S); }
+        return parseJSON(x.result);
+      }, function (e) { var er = new Error("ai"); er.code = e && e.code; er.uz = e && e.data && e.data.uz; throw er; });
+    }
     var s = ai.ns;
     var p = typeof s.json === "function" ? s.json(prompt, { modelTier: "default" }) : s(prompt, { modelTier: "default" }).then(function (r) { return r.text; });
     return p.then(parseJSON);
@@ -411,7 +418,7 @@
           A["r" + i] = { busy: 1 }; box.innerHTML = miniHTML(A["r" + i]); b.disabled = true;
           var q = (blk.q || "") + "\n" + (it.task ? [it.task.situation, it.task.to].concat(it.task.bullets || []).join("\n") : (it.q || "")) + (it.given ? "\n" + it.given : "");
           aiAsk(exPrompt(q, txt, it.sample)).then(function (r) { A["r" + i] = r; }, function (e) {
-            A["r" + i] = { err: e && e.code === "not_granted" ? "AI tekshiruviga ruxsat berilmadi." : e && e.code === "rate_limited" ? "Juda ko'p so'rov — birozdan keyin qayta urinib ko'ring." : "AI javob bera olmadi. Qayta urinib ko'ring." };
+            A["r" + i] = { err: e && e.uz ? e.uz : e && e.code === "not_granted" ? "AI tekshiruviga ruxsat berilmadi." : e && e.code === "rate_limited" ? "Juda ko'p so'rov — birozdan keyin qayta urinib ko'ring." : "AI javob bera olmadi. Qayta urinib ko'ring." };
           }).then(function () { box.innerHTML = miniHTML(A["r" + i]); b.disabled = false; });
         };
       });
@@ -555,7 +562,7 @@
           room.busy = false; room.ai = r; room.aiText = txt; finish(r);
         }, function (e) {
           room.busy = false;
-          room.err = e && e.code === "not_granted" ? "AI tekshiruviga ruxsat berilmadi. Sahifa sozlamalaridan ruxsat berishingiz mumkin." :
+          room.err = e && e.uz ? e.uz : e && e.code === "not_granted" ? "AI tekshiruviga ruxsat berilmadi. Sahifa sozlamalaridan ruxsat berishingiz mumkin." :
             e && e.code === "rate_limited" ? "Hozir juda ko'p so'rov yuborildi. Bir necha daqiqadan keyin qayta urinib ko'ring." : "AI javob bera olmadi. Qayta urinib ko'ring.";
           rerRoom(view);
         });
@@ -642,7 +649,7 @@
           exam.busy = false; exam.ai = { 1: r[0], 2: r[1] }; exam.aiText = { 1: ta[0].value, 2: ta[1].value }; finish();
         }, function (e) {
           exam.busy = false;
-          exam.err = e && e.code === "not_granted" ? "AI tekshiruviga ruxsat berilmadi." : e && e.code === "rate_limited" ? "Juda ko'p so'rov — birozdan keyin qayta urinib ko'ring." : "AI javob bera olmadi. Qayta urinib ko'ring.";
+          exam.err = e && e.uz ? e.uz : e && e.code === "not_granted" ? "AI tekshiruviga ruxsat berilmadi." : e && e.code === "rate_limited" ? "Juda ko'p so'rov — birozdan keyin qayta urinib ko'ring." : "AI javob bera olmadi. Qayta urinib ko'ring.";
           rer();
         });
       };
@@ -670,7 +677,7 @@
   }
 
   window.CEFR_WRITE = {
-    _ai: { ready: aiReady, ask: aiAsk, box: aiBox, wire: wireTeacher, wcount: wcount, esc: esc, fmt: fmt },
+    _ai: { ready: aiReady, ask: aiAsk, isServer: function () { return !!ai.server; }, box: aiBox, wire: wireTeacher, wcount: wcount, esc: esc, fmt: fmt },
     render: render,
     total: function () { return U1.length + U2.length + T.length + X.length; },
     doneCount: function () { return PARTS.reduce(function (a, p) { return a + doneIn(p); }, 0); },

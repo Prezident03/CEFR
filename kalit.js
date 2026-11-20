@@ -74,6 +74,7 @@
   function isOpen(it) {
     if (isFree(it) || wasDone(it)) return true;
     if (!S) return false;
+    if (window.CEFR_KEY_EXTRA) { try { if (window.CEFR_KEY_EXTRA(it, S)) return true; } catch (e) {} }
     return !!(S.all || S.sec === it.sec || (S.unlocked || []).indexOf(it.id) >= 0);
   }
 
@@ -242,6 +243,7 @@
     call: call, setS: setS, share: share, toast: toast, load: load,
     onChange: function (f) { subs.push(f); },
     free: FREE,
+    isOpen: function (it) { return isOpen(it); }, itemOf: itemOf,
     badge: function () { return '<button class="icon-btn kq-badge" onclick="location.hash=\'#/kalit\'" title="Kalitlar">🔑 <b id="kqN">' + (S ? S.keys : "…") + "</b></button>"; }
   };
 })();

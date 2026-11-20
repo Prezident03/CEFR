@@ -254,7 +254,8 @@
     var rows = run.steps.map(function (s, k) {
       var m = run.m, sample = s.pid === "s1" ? m.p11[s.i].a : s.pid === "s2" ? m.p12.qs[s.i].a : s.pid === "s3" ? m.p2.a : m.p3.a;
       return '<div class="sp-rv">' + stepHTML(s) +
-        '<div class="sp-meta">' + wc(run.ans[k]) + " so'z · " + fmt(run.secs[k]) + " gapirildi" + (s.q ? ' · <button class="sp-say" data-say="' + esc(s.q) + '"' + (cap.tts ? "" : " hidden") + ">🔊 Savol</button>" : "") + "</div>" +
+        '<div class="sp-meta">' + wc(run.ans[k]) + " so'z · " + fmt(run.secs[k]) + " gapirildi" + (s.q ? ' · <button class="sp-say" data-say="' + esc(s.q) + '"' + (cap.tts ? "" : " hidden") + ">🔊 Savol</button>" : "") +
+        (window.CEFR_PRO && window.CEFR_KEY ? ' · <button class="sp-say sp-voice" data-vpart="' + { s1: "1.1", s2: "1.2", s3: "2", s4: "3" }[s.pid] + '" data-vq="' + esc(s.q || (s.qs ? s.qs.join(" ") : s.table ? "Topic: " + s.table.topic + (s.table.for && s.table.for.length ? "\nFOR: " + s.table.for.join("; ") + "\nAGAINST: " + s.table.against.join("; ") : "") : "")) + '">🎙 Ovoz bilan (AI)</button>' : "") + "</div>" +
         '<textarea class="sp-ans" data-k="' + k + '" rows="' + (s.pid === "s3" || s.pid === "s4" ? 6 : 3) + '" placeholder="Javob matni (tahrirlash mumkin)">' + esc(run.ans[k]) + "</textarea>" +
         '<details class="wr-uz"><summary>Kitobdagi C1 namuna javob</summary><div class="wr-model">' + para(sample) + "</div>" + (cap.tts ? '<button class="btn ghost sm sp-say" data-say="' + esc(sample) + '">🔊 Namunani tinglash</button>' : "") + "</details></div>";
     }).join("");
@@ -279,7 +280,8 @@
     var n = document.getElementById("spNext"); if (n) n.onclick = function () { advance(); };
     var sp = document.getElementById("spStop"); if (sp) sp.onclick = function () { finishRun(); };
     v.querySelectorAll(".sp-ans").forEach(function (ta) { ta.oninput = function () { run.ans[+ta.dataset.k] = ta.value; clearTimeout(ta._t); ta._t = setTimeout(function () { persistRun(); }, 1200); }; });
-    v.querySelectorAll(".sp-say").forEach(function (b) { b.onclick = function (e) { e.preventDefault(); say(b.dataset.say); }; });
+    v.querySelectorAll(".sp-say:not(.sp-voice)").forEach(function (b) { b.onclick = function (e) { e.preventDefault(); say(b.dataset.say); }; });
+    v.querySelectorAll(".sp-voice").forEach(function (b) { b.onclick = function (e) { e.preventDefault(); window.CEFR_PRO.voice(b.dataset.vpart, b.dataset.vq, b); }; });
     var ag = document.getElementById("spAgain"); if (ag) ag.onclick = function () { var m = run.m, pid = run.pid; delete sst()[m.n0 + "." + pid]; save(); startRun(m, pid); run.phase = "ready"; run.done = false; rer(); };
     var h = H();
     if (h) h.wire(v);
@@ -293,7 +295,7 @@
           run.busy = false; run.ai = r; persistRun(Math.round(+r.overall || 0), r.level || ""); rer();
         }, function (e) {
           run.busy = false;
-          run.err = e && e.code === "not_granted" ? "AI tahliliga ruxsat berilmadi." : e && e.code === "rate_limited" ? "Juda ko'p so'rov — birozdan keyin qayta urinib ko'ring." : "AI javob bera olmadi. Qayta urinib ko'ring.";
+          run.err = e && e.uz ? e.uz : e && e.code === "not_granted" ? "AI tahliliga ruxsat berilmadi." : e && e.code === "rate_limited" ? "Juda ko'p so'rov — birozdan keyin qayta urinib ko'ring." : "AI javob bera olmadi. Qayta urinib ko'ring.";
           rer();
         });
       };

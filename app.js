@@ -1868,6 +1868,7 @@
       '<div class="tr-en">' + esc(en) + "</div>" +
       '<div class="tr-uz">' + (uz ? esc(uz) : (/^[^a-z]*$|^([A-Z0-9][\w'’&.-]*\s*){1,4}$/.test(en.trim()) ? '<span class="tr-none">Nom yoki sarlavha — tarjima talab qilinmaydi.</span>' : '<span class="tr-none">Bu jumla tarjimasi topilmadi.</span>')) + "</div>";
     sheet.hidden = false;
+    try { window.dispatchEvent(new CustomEvent("cefr:tr", { detail: { word: word, info: wordInfo, en: en, sheet: sheet } })); } catch (e) {}
   }
 
   document.addEventListener("click", function (e) {

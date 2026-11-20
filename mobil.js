@@ -95,7 +95,8 @@
       cont +
       (window.CEFR_PLAN ? '<div class="m-plan">' + window.CEFR_PLAN.homeCard() + "</div>" : "") +
       '<div class="m-h2"><h2>Bo\'limlar</h2><a href="#/mashq">Hammasi</a></div>' +
-      '<div class="m-tiles">' + tiles + "</div>" + invite +
+      '<div class="m-tiles">' + tiles + "</div>" +
+      (window.CEFR_PRO ? '<div class="m-h2"><h2>Maxsus imkoniyatlar</h2></div>' + window.CEFR_PRO.tilesHTML() : "") + invite +
       "</div>";
   }
 
@@ -104,6 +105,7 @@
     var st = stats(), secs = bySec(st);
     return '<div class="m-page"><header class="m-title"><h1>Mashqlar</h1>' + keyPill() + "</header>" +
       (K() ? '<p class="m-note">Har bir qismdagi dastlabki ' + K().free + " ta mashq bepul, qolganlari 🔑 kalit bilan ochiladi.</p>" : "") +
+      (window.CEFR_PRO ? window.CEFR_PRO.tilesHTML() : "") +
       SEC.map(function (s) {
         var d = secs[s.id], p = d.total ? Math.round(d.done / d.total * 100) : 0;
         var chips = s.parts.filter(function (id) { return d.parts[id] && d.parts[id].total; }).map(function (id) {
@@ -135,6 +137,7 @@
       var status = S.all ? "👑 Barcha mashqlar umrbod ochiq" : S.sec ? "🏅 " + { reading: "Reading", listening: "Listening", writing: "Writing", speaking: "Speaking" }[S.sec] + " bo'limi butunlay ochiq" : "";
       if (S.admin) h += '<a class="m-admin-link" href="#/admin"><span>🛠</span><span><b>Admin panel</b><small>Foydalanuvchilar, statistika, kalit berish</small></span>' + ic("chev", "m-chev") + "</a>";
       if (status) h += '<div class="m-badge-line">' + status + "</div>";
+      if (window.CEFR_PRO) h += window.CEFR_PRO.profileHTML();
       // referal
       h += '<section class="m-card m-ref"><div class="m-ref-top"><div><small>Referal kodingiz</small><b class="m-code">' + esc(S.code || "") + '</b></div><button class="m-icbtn" data-act="copycode" title="Nusxalash">' + ic("copy") + "</button></div>" +
         '<p>Do\'stingiz havolangiz orqali kirsa yoki kodingizni kiritsa — sizga <b>+3 🔑</b>, unga <b>+2 🔑</b>. U birinchi mashqini bajarsa, sizga yana <b>+2 🔑</b>.</p>' +
@@ -162,6 +165,7 @@
     // sozlamalar
     var tr = window.CEFR_TR && window.CEFR_TR.isOn(), mode = themeMode();
     h += '<section class="m-card"><h3>⚙️ Sozlamalar</h3>' +
+      (S && K() ? '<label class="m-set"><span><b>Kunlik eslatma</b><small>Kechqurun mashq qilmagan bo\'lsangiz, bot eslatib qo\'yadi</small></span><input type="checkbox" class="m-sw" data-act="notify"' + (S.notify !== false ? " checked" : "") + "></label>" : "") +
       '<label class="m-set"><span><b>Bosganda tarjima</b><small>Matndagi so\'z yoki gapni bossangiz, o\'zbekcha tarjimasi chiqadi</small></span><input type="checkbox" class="m-sw" data-act="tr"' + (tr ? " checked" : "") + "></label>" +
       (fsOK() ? '<div class="m-set"><span><b>To\'liq ekran</b><small>Kompyuterda ilovani butun ekranga yoyish</small></span>' + fsBtn("set") + "</div>" : "") +
       '<div class="m-set"><span><b>Mavzu</b><small>Ilova ranglari</small></span></div><div class="m-seg">' +
@@ -294,6 +298,7 @@
     view.querySelectorAll("[data-act]").forEach(function (b) {
       var a = b.dataset.act;
       if (a === "tr") { b.onchange = function () { if (window.CEFR_TR) window.CEFR_TR.toggle(); }; return; }
+      if (a === "notify") { b.onchange = function () { K().call("/api/notify", { on: b.checked }).then(function (x) { K().setS(x); K().toast(b.checked ? "🔔 Eslatma yoqildi" : "🔕 Eslatma o'chirildi"); }, function () { b.checked = !b.checked; }); }; return; }
       b.onclick = function (e) {
         e.preventDefault(); var S = KS();
         if (a === "share" && K()) K().share();
@@ -361,7 +366,8 @@
   function tabOf(h) {
     var p = h.replace(/^#\/?/, "").split("/")[0];
     if (!p) return 0;
-    if (p === "mashq" || p === "reading" || p === "listening" || p === "writing" || p === "speaking") return 1;
+    if (/^(mashq|reading|listening|writing|speaking|lugat|duel|mock|ovoz)$/.test(p)) return 1;
+    if (p === "guruh" || p === "karta") return 4;
     if (p === "reja") return 2;
     if (p === "stats") return 3;
     if (p === "profil" || p === "kalit" || p === "admin") return 4;
@@ -385,6 +391,7 @@
   function route(parts, view) {
     nav();
     var p = parts[0] || "";
+    if (window.CEFR_PRO && window.CEFR_PRO.route(parts, view)) return true;
     if (p === "") { view.innerHTML = viewHome(); wire(view); return true; }
     if (p === "mashq") { view.innerHTML = viewMashq(); return true; }
     if (p === "profil") { view.innerHTML = viewProfil(); wire(view); loadRefs(); return true; }
@@ -399,5 +406,5 @@
       if (h === "admin" && !AD.stats && !AD.list) render();
     });
   });
-  window.CEFR_MOBILE = { route: route };
+  window.CEFR_MOBILE = { route: route, ic: ic, esc: esc, avatar: avatar, keyPill: keyPill, stats: stats, bySec: bySec, SEC: SEC, PART_SHORT: PART_SHORT, exHref: exHref, partHref: partHref, ring: ring, dt: dt, ago: ago, render: render, firstName: firstName, fullName: fullName };
 })();
