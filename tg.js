@@ -34,7 +34,7 @@
     var mob = document.documentElement.classList.contains("mob");
     if (p.length === 1 && /^(stats|reja|mashq|profil)$/.test(p[0])) return mob ? null : "#/";
     if (p[0] === "kalit") return mob ? "#/profil" : "#/";
-    if (p.length === 1 && /^(reading|listening|writing|speaking|lugat|duel|mock|ovoz)$/.test(p[0])) return mob ? "#/mashq" : "#/";
+    if (p.length === 1 && /^(reading|listening|writing|speaking|lugat|duel|mock|ovoz|qollanma)$/.test(p[0])) return mob ? "#/mashq" : "#/";
     if (p.length === 1 && /^(guruh|karta)$/.test(p[0])) return mob ? "#/profil" : "#/";
     if (p[0] === "speaking" && p[1] === "x") return "#/speaking/" + (!p[3] || p[3] === "all" ? "m" : p[3]);
     p.pop();

@@ -366,7 +366,7 @@
   function tabOf(h) {
     var p = h.replace(/^#\/?/, "").split("/")[0];
     if (!p) return 0;
-    if (/^(mashq|reading|listening|writing|speaking|lugat|duel|mock|ovoz)$/.test(p)) return 1;
+    if (/^(mashq|reading|listening|writing|speaking|lugat|duel|mock|ovoz|qollanma)$/.test(p)) return 1;
     if (p === "guruh" || p === "karta") return 4;
     if (p === "reja") return 2;
     if (p === "stats") return 3;
