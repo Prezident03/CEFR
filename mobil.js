@@ -89,6 +89,7 @@
     var invite = K() ? '<div class="m-invite"><div><b>Do\'stlaringizni taklif qiling</b><small>Har bir do\'st uchun <b>+3 🔑</b>, u ham <b>+2 🔑</b> oladi</small></div><button class="m-btn light" data-act="share">' + ic("share") + "Ulashish</button></div>" : "";
     return '<div class="m-page m-home">' +
       '<header class="m-head"><a class="m-hi" href="#/profil">' + avatar("sm") + "<span><small>" + hello() + ",</small><b>" + esc(firstName()) + "</b></span></a><span class=\"m-hr\">" + (DESKTOP ? fsBtn("ic") : "") + keyPill() + "</span></header>" +
+      (window.CEFR_DICTUI ? '<a class="m-search" href="#/dict"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span>So\'z qidirish — inglizcha yoki o\'zbekcha</span></a>' : "") +
       '<section class="m-hero"><div class="m-hero-l"><div class="m-streak"><span>🔥</span><b>' + (st.streak || 0) + "</b><small>kun<br>ketma-ket</small></div>" +
       '<div class="m-hstats"><span><b>' + mins(st.today) + "</b><small>bugun</small></span><span><b>" + (st.acc != null ? st.acc + "%" : "—") + "</b><small>o'rtacha</small></span></div></div>" +
       '<div class="m-hero-r">' + ring(pct, 92) + '<span class="m-ring-t"><b>' + pct + "%</b><small>" + st.done + "/" + st.totalEx + "</small></span></div></section>" +
@@ -104,6 +105,7 @@
   function viewMashq() {
     var st = stats(), secs = bySec(st);
     return '<div class="m-page"><header class="m-title"><h1>Mashqlar</h1>' + keyPill() + "</header>" +
+      (window.CEFR_DICTUI ? '<a class="m-search" href="#/dict"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span>Lug\'atdan so\'z qidirish</span></a>' : "") +
       (K() ? '<p class="m-note">Har bir qismdagi dastlabki ' + K().free + " ta mashq bepul, qolganlari 🔑 kalit bilan ochiladi.</p>" : "") +
       (window.CEFR_PRO ? window.CEFR_PRO.tilesHTML() : "") +
       SEC.map(function (s) {

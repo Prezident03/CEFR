@@ -160,6 +160,7 @@
       '<div class="top-actions">' +
         (window.CEFR_AUTH && window.CEFR_AUTH.current() ? '<button class="icon-btn stats-btn" id="statsBtn" title="Statistika"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>Statistika</span></button>' : "") +
         (window.CEFR_AUTH && window.CEFR_AUTH.current() && window.CEFR_PLAN ? '<button class="icon-btn stats-btn" id="planBtn" title="Imtihon rejasi"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M9 3v4M15 3v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Reja</span></button>' : "") +
+        (window.CEFR_DICTUI ? '<button class="icon-btn stats-btn" id="dictBtn" title="Lug\'at"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>Lug\'at</span></button>' : "") +
         '<button class="icon-btn" id="trBtn" aria-pressed="' + (window.CEFR_TR && CEFR_TR.isOn() ? "true" : "false") + '" title="Matndagi so\'zni bossangiz tarjimasi chiqadi">Tarjima: ' + (window.CEFR_TR && CEFR_TR.isOn() ? "yoqiq" : "o\'chiq") + "</button>" +
         '<button class="icon-btn" id="nightBtn">' + (night ? "Kunduzgi" : "Tungi") + " rejim</button>" +
         (window.CEFR_KEY ? window.CEFR_KEY.badge() : "") +
@@ -167,6 +168,8 @@
       "</div>";
     var sb = document.getElementById("statsBtn");
     if (sb) sb.onclick = function () { location.hash = "#/stats"; };
+    var db = document.getElementById("dictBtn");
+    if (db) db.onclick = function () { location.hash = "#/dict"; };
     var pb = document.getElementById("planBtn");
     if (pb) pb.onclick = function () { location.hash = "#/reja"; };
     if (window.CEFR_AUTH) window.CEFR_AUTH.wireChip();
@@ -1530,6 +1533,7 @@
     var auth = window.CEFR_AUTH;
     if (auth && !auth.isReady()) { view.innerHTML = auth.loadingHTML(); return; }
     if (auth && !auth.current()) { auth.renderLogin(view); window.scrollTo(0, 0); return; }
+    if (window.CEFR_DICTUI && window.CEFR_DICTUI.route(parts, view)) { window.scrollTo(0, 0); return; }
     if (window.CEFR_GUIDE && window.CEFR_GUIDE.route(parts, view)) { window.scrollTo(0, 0); return; }
     if (window.CEFR_MOBILE && window.CEFR_MOBILE.route(parts, view)) { window.scrollTo(0, 0); return; }
     if (window.CEFR_KEY && window.CEFR_KEY.gate(parts, view)) { window.scrollTo(0, 0); return; }
